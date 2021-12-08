@@ -51,31 +51,59 @@ app.get('/', (req, res) => {
   res.render("main", { title: NAME, 'version' : VERSION });
 });
 
+
+// Shutdown
+
+// Require child_process
+var exec = require('child_process').exec;
+
 app.get('/api/shutdown', (req, res) => {
   if (NO_EXECUTION) {
     res.json({ status: "NO_EXECUTION" }).end();
     return;
   }
 
-  var exec = require('child_process').exec;
+  // Reboot computer
+  exec('shutdown now', (error, stdout, stderr) => {
+    console.log("error");
+    console.log(error);
+    console.log("stdout");
+    console.log(stdout);
+    console.log("stderr");
+    console.log(stderr);
 
-  function execute(command, callback){
-    exec(command, function(error, stdout, stderr){ callback(stdout); });
+    if (error !== null) {
+      res.json({ status: "error", message: stderr }).end();
+      return;
+    }
+
+    res.json({ status: "ok", message: stderr }).end();
+  });
+});
+
+app.get('/api/getip', (req, res) => {
+  if (NO_EXECUTION) {
+    res.json({ status: "NO_EXECUTION" }).end();
+    return;
   }
 
-  execute('shutdown -r now', function(callback) {
-    console.log(callback);
-  });
+  // Reboot computer
+  exec('hostname -I', (error, stdout, stderr) => {
+    if (stderr) {
+      res.json({ status: "error", message: stderr }).end();
+      return;
+    }
 
-  res.json({ status: "ok" }).end();
+    res.json({ status: "ok", message: stdout }).end();
+  });
 });
 
 // Add 404
 app.use((req, res, next) => {
-    res.status(404).render("error", { title: "404", 'message' : `Page not found 🤔<br><span style="font-style: normal;">${req.method} ${req.path}</span>` });
+  res.status(404).render("error", { title: "404", 'message' : `Page not found 🤔<br><span style="font-style: normal;">${req.method} ${req.path}</span>` });
 });
 
 app.listen(PORT, () => { // Listen on port 3000
-    console.log(`Listening on ${PORT}`); // Log when listen success
+  console.log(`Listening on ${PORT}`); // Log when listen success
 })
 
