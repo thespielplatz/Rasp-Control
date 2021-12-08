@@ -1,17 +1,22 @@
+const NO_EXECUTION = process.argv.includes('--noexec');
+console.log(NO_EXECUTION);
+
+const PORT = 2222;
+
 let NAME = require('./package.json').name;
 let VERSION = require('./package.json').version;
 
-const express = require('express'); 
-const bodyParser = require('body-parser'); 
+const express = require('express');
+const bodyParser = require('body-parser');
 const favicon = require('express-favicon');
 const fs = require('fs');
 
-const app = express(); 
+const app = express();
 app.use(favicon(__dirname + '/static/img/favicon.png'));
 app.use('/static', express.static('static'));
 
-app.use(bodyParser.json()); 
-app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Template Engine
 app.engine('ntl', function (filePath, options, callback) { // define the template engine
@@ -35,9 +40,34 @@ app.engine('ntl', function (filePath, options, callback) { // define the templat
 app.set('views', './pages') // specify the views directory
 app.set('view engine', 'ntl') // register the template engine
 
+// -----------------------> Logging
+app.use((req, res, next) => {
+  console.log(`${req.method}:${req.url} ${res.statusCode}`);
+  next();
+});
+
 // Default Route
 app.get('/', (req, res) => {
-  res.render("title", { title: NAME, 'message' : VERSION });
+  res.render("main", { title: NAME, 'version' : VERSION });
+});
+
+app.get('/api/shutdown', (req, res) => {
+  if (NO_EXECUTION) {
+    res.json({ status: "NO_EXECUTION" }).end();
+    return;
+  }
+
+  var exec = require('child_process').exec;
+
+  function execute(command, callback){
+    exec(command, function(error, stdout, stderr){ callback(stdout); });
+  }
+
+  execute('shutdown -r now', function(callback) {
+    console.log(callback);
+  });
+
+  res.json({ status: "ok" }).end();
 });
 
 // Add 404
@@ -45,7 +75,7 @@ app.use((req, res, next) => {
     res.status(404).render("error", { title: "404", 'message' : `Page not found 🤔<br><span style="font-style: normal;">${req.method} ${req.path}</span>` });
 });
 
-app.listen(3000, () => { // Listen on port 3000
-    console.log('Listening!') // Log when listen success
+app.listen(PORT, () => { // Listen on port 3000
+    console.log(`Listening on ${PORT}`); // Log when listen success
 })
 

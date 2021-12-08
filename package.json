@@ -1,5 +1,5 @@
 {
-  "name": "Basic Express",
+  "name": "RaspControl",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,6 +11,7 @@
   },
   "devDependencies": {},
   "scripts": {
+    "main": "node index.js --noexec",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
