@@ -82,19 +82,28 @@ app.get('/api/shutdown', (req, res) => {
 });
 
 app.get('/api/getip', (req, res) => {
+  const html = 'type' in req.query && req.query.type == "html";
+  const returnUrl = "https://tft-pi.thespielplatz.repl.co/";
+
   if (NO_EXECUTION) {
-    res.json({ status: "NO_EXECUTION" }).end();
+    if (html) {
+      res.send(`<a href="${returnUrl}">TFT PI Dashboard</a> <b>NO EXECUTION!</b>`);
+    } else {
+      res.json({ status: "NO_EXECUTION"}).end();
+    }
     return;
   }
 
-  // Reboot computer
   exec('hostname -I', (error, stdout, stderr) => {
     if (stderr) {
       res.json({ status: "error", message: stderr }).end();
       return;
     }
-
-    res.json({ status: "ok", message: stdout }).end();
+    if (html) {
+      res.send(`PI: ${stdout}<br><a href="${returnUrl}">TFT PI Dashboard</a>`);
+    } else {
+      res.json({ status: "ok", message: stdout }).end();
+    }
   });
 });
 
