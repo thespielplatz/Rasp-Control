@@ -1,7 +1,7 @@
 const NO_EXECUTION = process.argv.includes('--noexec');
 console.log(NO_EXECUTION);
 
-const PORT = 2222;
+const PORT = process.env.NODE_PORT || 2222;
 
 let NAME = require('./package.json').name;
 let VERSION = require('./package.json').version;
